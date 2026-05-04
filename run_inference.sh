@@ -1,0 +1,87 @@
+#!/bin/bash
+set -e # Exit immediately if a command exits with a non-zero status
+
+# ==============================================================================
+# 1. Configuration & Input Variables
+# ==============================================================================
+# Set these paths according to your local environment
+SPLISYNC_DIR="/path/to/SpliSync"
+MODEL_CKPT="model_weights/cdna_r9.ckpt"
+REF_FASTA="/path/to/GRCh38.p13.genome.fa"
+INPUT_BAM="test_data/reads_aligned_reads.50k.bam"
+
+# Prefix for intermediate and output files
+PREFIX="${INPUT_BAM%.bam}"
+
+# Intermediate file definitions
+MERGED_BAM="${PREFIX}.merge.bam"
+DATA_DIR="inferencedata_${PREFIX}"
+PREDICTIONS="${DATA_DIR}_predictions.tsv"
+BED12_OUT="${PREFIX}.bed12"
+INTRON_MARKS="${PREFIX}.intron_marks"
+UPDATED_INTRONS="${PREFIX}.updated_${PREDICTIONS}_threshold21"
+CORRECTED_BED="${PREFIX}.corrected"
+CLEAN_BED="${PREFIX}.corrected.rm0block"
+CORRECTED_BAM="${PREFIX}.corrected.bam"
+
+# ==============================================================================
+# 2. Preprocessing & Data Curation
+# ==============================================================================
+echo "[1/5] Preparing reference and BAM files..."
+samtools faidx "$REF_FASTA"
+
+# Note: Ensure the input BAM is sorted and indexed prior to merging
+bedtools merge -i "$INPUT_BAM" > "$MERGED_BAM"
+
+echo "[2/5] Curating dataset for inference..."
+python "${SPLISYNC_DIR}/curate_dataset.inference.py" "$INPUT_BAM" "$REF_FASTA"
+
+# ==============================================================================
+# 3. SpliSync Model Inference
+# ==============================================================================
+echo "[3/5] Running SpliSync inference..."
+python run_splisync.py \
+    --data_dir "$DATA_DIR" \
+    --model_path "$MODEL_CKPT"
+
+# ==============================================================================
+# 4. BED Block Correction
+# ==============================================================================
+echo "[4/5] Applying predictions and correcting BED blocks..."
+
+# Convert BAM to BED12
+bedtools bamtobed -i "$INPUT_BAM" -bed12 > "$BED12_OUT"
+
+# Extract introns and apply model predictions
+python bed12_to_introns.py "$BED12_OUT" > "$INTRON_MARKS"
+
+python update_introns.py "$INTRON_MARKS" "$PREDICTIONS"
+
+# Correct the BED12 blocks based on updated splice sites
+python correct_bed_blocks.py "$BED12_OUT" "$UPDATED_INTRONS"
+
+# Clean up zero-length blocks
+python "${SPLISYNC_DIR}/remove_zero_blocks.py" "$CORRECTED_BED" 
+
+# ==============================================================================
+# 5. BAM Reconstruction & Tag Transfer
+# ==============================================================================
+echo "[5/5] Reconstructing corrected BAM file..."
+
+# Extract FASTA sequences in the background 
+bedtools getfasta -fi "$REF_FASTA" -bed "$CLEAN_BED" -split -bedOut > "${CLEAN_BED}.getfasta" &
+
+# Convert corrected BED12 back to BAM
+bedToBam -i "$CLEAN_BED" -g "${REF_FASTA}.fai" -bed12 > "$CORRECTED_BAM"
+samtools index "$CORRECTED_BAM"
+
+# Add XS tags for splicing analysis
+samtools view -h "$CORRECTED_BAM" | "${SPLISYNC_DIR}/addXS" "$REF_FASTA" > "${CORRECTED_BAM}.addxs"
+
+# Wait for background processes (e.g., getfasta) to finish
+wait
+
+# Transfer original BAM tags to the newly corrected BAM
+python transfer_bam_tags.py "$INPUT_BAM" "$CORRECTED_BAM" "${CORRECTED_BED}.filtered_indices" "${CLEAN_BED}.getfasta" "${CORRECTED_BAM}.addxs"
+
+echo "Workflow complete! Corrected BAM: ${CORRECTED_BAM}.final.bam"
