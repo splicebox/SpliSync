@@ -1,10 +1,29 @@
 # SpliSync
-Genomic-language-model-driven splice site correction of long RNA sequencing reads.
 
-SpliSync improves splice-site accuracy in long-read RNA-seq alignments using a genomic language model, producing corrected BED/BAM outputs for downstream isoform assembly and splicing analysis.
+SpliSync corrects splice sites in long-read RNA-seq alignments using a genomic language model. It produces corrected BED/BAM outputs that can be used in downstream transcriptomic analyses, including isoform identification, quantification, and alternative splicing analysis. SpliSync is currently suited for reads produced with the Oxford Nanopore technologies. 
 
-## ✨ Key Features
-- 
+Described in:
+
+- Lui WW and Florea L (2026). SpliSync: Genomic language model-driven splice site correction of long RNA sequencing reads. Submitted. [Suppl. data, Suppl. scripts, Full_text]
+
+```
+Copyright (C) 2026, and GNU GPL v3.0, by Wui Wang Lui, Liliana Florea
+```
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.  
+
+## <a name="table-of-contents"></a> Table of contents
+- [What is SpliSync?](#what-is-splisync)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Input/Output](#inputoutput)
+- [Visualization](#visualization)
+- [Support and Coursera Education](#support)
+
+## <a name="what-is-splisync"></a> What is SplyiSync?
+SpliSync is a genomic language model-driven Python package for correcting splice sites and introns in long RNA sequencing read spliced alignments. It integrates a pre-trained genomic sequence model, HyenaDNA, alignment data, and a U-net architecture to predict splice sites at nucleotide resolutionin the underlying genomic sequence. SpliSync can correct splice sites based solely on the input alignments and without the use of a reference annotation, and therefore can detect novel splice sites. It can also leverage annotation, if available, to improve its predictions. SpliSync substantially improves the accuracy of RNA long-read alignments across datasets generated with diverse ONT technologies (cDNA, direct RNA, CapTrap, R2C2), chemistries (R9, R10), and from a wide range of vertebrate species.
+
+### ✨ Key Features 
 
 ## 🚀 Quick Start / Installation
 1. Clone the repository and enter the project directory.
