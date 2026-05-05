@@ -1,6 +1,6 @@
 # SpliSync
 
-SpliSync is a genomic language model-driven method for splice site correction in long-read RNA-seq alignments. It produces corrected BED/BAM outputs that can be used in downstream transcriptomic analyses, including isoform identification, quantification, and alternative splicing analysis. SpliSync is currently suited for reads produced with the Oxford Nanopore technologies. 
+SpliSync is a Genomic Language Model-driven method for splice site correction in long read RNA-seq alignments. It produces corrected BED/BAM outputs that can be used in downstream transcriptomic analyses, including isoform identification, quantification, and alternative splicing analysis. SpliSync is currently suited for reads produced with the Oxford Nanopore technologies. 
 
 Described in:
 
