@@ -1,6 +1,6 @@
 # SpliSync
 
-SpliSync corrects splice sites in long-read RNA-seq alignments using a genomic language model. It produces corrected BED/BAM outputs that can be used in downstream transcriptomic analyses, including isoform identification, quantification, and alternative splicing analysis. SpliSync is currently suited for reads produced with the Oxford Nanopore technologies. 
+SpliSync is a genomic language model-driven method for splice site correction in long-read RNA-seq alignments. It produces corrected BED/BAM outputs that can be used in downstream transcriptomic analyses, including isoform identification, quantification, and alternative splicing analysis. SpliSync is currently suited for reads produced with the Oxford Nanopore technologies. 
 
 Described in:
 
@@ -14,18 +14,17 @@ This program is free software: you can redistribute it and/or modify it under th
 
 ## <a name="table-of-contents"></a> Table of contents
 - [What is SpliSync?](#what-is-splisync)
-- [Installation](#installation)
+- [Quick Start / Installation](#installation)
 - [Usage](#usage)
-- [Input/Output](#inputoutput)
-- [Visualization](#visualization)
-- [Support and Coursera Education](#support)
+- [Inputs and Outputs](#inputoutput)
+- [Support and Contributing](#supportcontributing)
 
 ## <a name="what-is-splisync"></a> What is SplyiSync?
 SpliSync is a genomic language model-driven Python package for correcting splice sites and introns in long RNA sequencing read spliced alignments. It integrates a pre-trained genomic sequence model, HyenaDNA, alignment data, and a U-net architecture to predict splice sites at nucleotide resolutionin the underlying genomic sequence. SpliSync can correct splice sites based solely on the input alignments and without the use of a reference annotation, and therefore can detect novel splice sites. It can also leverage annotation, if available, to improve its predictions. SpliSync substantially improves the accuracy of RNA long-read alignments across datasets generated with diverse ONT technologies (cDNA, direct RNA, CapTrap, R2C2), chemistries (R9, R10), and from a wide range of vertebrate species.
 
 ### ✨ Key Features 
 
-## 🚀 Quick Start / Installation
+## 🚀 <a name="installation"></a> Quick Start / Installation
 1. Clone the repository and enter the project directory.
 2. Create the conda environment from [splisync_env.yml](splisync_env.yml):
 
@@ -45,7 +44,7 @@ g++ -o addXS -I./samtools-0.1.19 -L./samtools-0.1.19 -Wall -O3 addXS.o -lbam -lz
 	 - A sorted, indexed BAM of long-read RNA-seq alignments.
 	 - A reference genome FASTA (indexed with `samtools faidx`).
 
-## 🧪 Usage
+## 🧪 <a name="usage"></a> Usage
 ### Inference pipeline 
 Edit the configuration variables at the top of [run_inference.sh](run_inference.sh), then run:
 
@@ -56,7 +55,7 @@ bash run_inference.sh
 ### Notebook demo
 Open [demo.ipynb](demo.ipynb) for a step-by-step, reproducible walkthrough of the inference workflow.
 
-## 📊 Inputs & Outputs
+## 📊 <a name="inputoutput"></a>Inputs & Outputs
 
 ### Inputs
 | File | Format | Description | Example |
@@ -93,13 +92,14 @@ Output (after pipeline completion):
 └── reads_aligned.intron_marks                             # Intermediate intron annotations
 ```
 
-## 🤝 Contributing
+## 🤝 <a name="supportcontributing"></a>Support and Contributing
 Contributions are welcome!
 
-- Open an issue for bugs or feature requests.
+- Open an [issue](https://github.com/splicebox/SpliSync/issues) for bugs or feature requests.
 - Fork the repo and create a feature branch.
 - Keep scripts reproducible and document any new inputs/outputs.
 - Submit a pull request with a clear description of the change.
 
 ## 📄 License
-GNU General Public License v3.0.
+SpliSync is distributed under the GNU General Public License v3.0. Please see the file LICENSE for information on the history of this software, terms
+& conditions for usage, and a DISCLAIMER OF ALL WARRANTIES.
