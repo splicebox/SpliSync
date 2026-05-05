@@ -19,7 +19,7 @@ This program is free software: you can redistribute it and/or modify it under th
 - [Inputs and Outputs](#inputoutput)
 - [Support and Contributing](#supportcontributing)
 
-## <a name="what-is-splisync"></a> What is SplyiSync?
+## <a name="what-is-splisync"></a> What is SpliSync?
 SpliSync is a genomic language model-driven Python package for correcting splice sites and introns in long read RNA-seq spliced alignments. It integrates a pre-trained genomic sequence model, HyenaDNA, alignment data, and a U-net architecture to predict splice sites at nucleotide resolutionin the underlying genomic sequence. SpliSync can correct splice sites based solely on the input alignments and without the use of a reference annotation, and therefore can detect novel splice sites. It can also leverage annotation, if available, to improve its predictions. SpliSync substantially improves the accuracy of RNA long-read alignments across datasets generated with diverse ONT technologies (cDNA, direct RNA, CapTrap, R2C2), chemistries (R9, R10), and from a wide range of vertebrate species.
 
 ### ✨ Key Features 
