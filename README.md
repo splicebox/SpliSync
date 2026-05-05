@@ -33,7 +33,7 @@ conda env create -f splisync_env.yml
 conda activate splisync
 ```
 
-3. Build the `addXS` helper binary from [AddXS.cpp](AddXS.cpp) (required if you want XS tags in corrected BAMs):
+3. Build the `addXS` helper binary from [AddXS.cpp](AddXS.cpp) (required if you want XS tags in the corrected BAMs):
 
 ```bash
 g++ -c -o addXS.o -I./samtools-0.1.19 -L./samtools-0.1.19 -Wall -O3 AddXS.cpp -lbam -lz -lm -lpthread
@@ -41,8 +41,8 @@ g++ -o addXS -I./samtools-0.1.19 -L./samtools-0.1.19 -Wall -O3 addXS.o -lbam -lz
 ```
 
 4. Prepare inputs:
-	 - A sorted, indexed BAM of long-read RNA-seq alignments.
-	 - A reference genome FASTA (indexed with `samtools faidx`).
+	 - A sorted, indexed BAM file containing long-read RNA-seq alignments.
+	 - A reference genome FASTA file (indexed with `samtools faidx`).
 
 ## 🧪 <a name="usage"></a> Usage
 ### Inference pipeline 
@@ -55,12 +55,12 @@ bash run_inference.sh
 ### Notebook demo
 Open [demo.ipynb](demo.ipynb) for a step-by-step, reproducible walkthrough of the inference workflow.
 
-## 📊 <a name="inputoutput"></a>Inputs & Outputs
+## 📊 <a name="inputoutput"></a>Inputs and Outputs
 
 ### Inputs
 | File | Format | Description | Example |
 |------|--------|-------------|---------|
-| **Aligned Reads** | BAM (sorted, indexed) | Long-read RNA-seq alignments (Nanopore, PacBio cDNA/IsoSeq). Must be coordinate-sorted with `.bai` index. | `reads_aligned.bam` |
+| **Aligned Reads** | BAM (sorted, indexed) | Long-read RNA-seq alignments (Nanopore, PacBio cDNA/IsoSeq). Must be coordinate-sorted and have a `.bai` index. | `reads_aligned.bam` |
 | **Reference Genome** | FASTA (faidx-indexed) | Reference genome sequence. Index generated automatically by `samtools faidx`. | `GRCh38.p13.genome.fa` |
 | **Model Checkpoint** | PyTorch `.ckpt` | Pretrained weights for splice-site correction. Provided in [model_weights/](model_weights/). | `model_weights/cdna_r9.ckpt` |
 
