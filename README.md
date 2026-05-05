@@ -20,12 +20,16 @@ This program is free software: you can redistribute it and/or modify it under th
 - [Support and Contributing](#supportcontributing)
 
 ## <a name="what-is-splisync"></a> What is SplyiSync?
-SpliSync is a genomic language model-driven Python package for correcting splice sites and introns in long RNA sequencing read spliced alignments. It integrates a pre-trained genomic sequence model, HyenaDNA, alignment data, and a U-net architecture to predict splice sites at nucleotide resolutionin the underlying genomic sequence. SpliSync can correct splice sites based solely on the input alignments and without the use of a reference annotation, and therefore can detect novel splice sites. It can also leverage annotation, if available, to improve its predictions. SpliSync substantially improves the accuracy of RNA long-read alignments across datasets generated with diverse ONT technologies (cDNA, direct RNA, CapTrap, R2C2), chemistries (R9, R10), and from a wide range of vertebrate species.
+SpliSync is a genomic language model-driven Python package for correcting splice sites and introns in long read RNA-seq spliced alignments. It integrates a pre-trained genomic sequence model, HyenaDNA, alignment data, and a U-net architecture to predict splice sites at nucleotide resolutionin the underlying genomic sequence. SpliSync can correct splice sites based solely on the input alignments and without the use of a reference annotation, and therefore can detect novel splice sites. It can also leverage annotation, if available, to improve its predictions. SpliSync substantially improves the accuracy of RNA long-read alignments across datasets generated with diverse ONT technologies (cDNA, direct RNA, CapTrap, R2C2), chemistries (R9, R10), and from a wide range of vertebrate species.
 
 ### ✨ Key Features 
 
 ## 🚀 <a name="installation"></a> Quick Start / Installation
 1. Clone the repository and enter the project directory.
+```
+git clone https://github.com/splicebox/SpliSync.git
+```
+
 2. Create the conda environment from [splisync_env.yml](splisync_env.yml):
 
 ```bash
@@ -44,9 +48,11 @@ g++ -o addXS -I./samtools-0.1.19 -L./samtools-0.1.19 -Wall -O3 addXS.o -lbam -lz
 	 - A sorted, indexed BAM file containing long-read RNA-seq alignments.
 	 - A reference genome FASTA file (indexed with `samtools faidx`).
 
+More details are provided below.
+
 ## 🧪 <a name="usage"></a> Usage
 ### Inference pipeline 
-Edit the configuration variables at the top of [run_inference.sh](run_inference.sh), then run:
+Edit the configuration variables at the top of [run_inference.sh](run_inference.sh) to reflect the variables (*i.e.*, path to SpliSync code, inout alignments and genome sequence) on your system, then run:
 
 ```bash
 bash run_inference.sh
