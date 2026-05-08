@@ -61,7 +61,7 @@ More details are provided below.
 Edit the configuration variables at the top of [run_inference.sh](run_inference.sh) to reflect the variables (*i.e.*, path to SpliSync code, inout alignments and genome sequence) on your system, then run:
 
 ```bash
-bash run_inference.sh
+bash run_inference.sh <input_bam> <ref_fasta>
 ```
 
 #### Notebook demo
@@ -97,11 +97,10 @@ minimap2 -ax splice -uf -k14 -t 24 ref_genome.fa input_reads.fastq |samtools sor
 ```
 Input:
 ├── reads_aligned.bam          # 500k aligned Nanopore cDNA reads
-├── reads_aligned.bam.bai      # BAM index
 └── GRCh38.p13.genome.fa       # Human reference (faidx-indexed)
 
 Configuration (run_inference.sh):
-├── MODEL_CKPT = "model_weights/cdna_r9.ckpt"
+├── MODEL_CKPT = "./model_weights/cdna_r9.ckpt"
 ├── INPUT_BAM = "reads_aligned.bam"
 └── REF_FASTA = "GRCh38.p13.genome.fa"
 

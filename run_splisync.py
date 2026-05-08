@@ -2018,7 +2018,7 @@ def cli_main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_path", default="", help="optional ckpt to fine-tune from")
     parser.add_argument("--stage", default="test", help="train/test")
-    parser.add_argument("--batch_size", default=72)
+    parser.add_argument("--batch_size", default=64)
     parser.add_argument("--accumulate_grad_batches", default=2)
     parser.add_argument("--num_workers", default=8)
     parser.add_argument("--prefetch_factor", default=2)

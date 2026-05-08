@@ -40,22 +40,15 @@ awk -v OFS="\t" '{print $1, $5, $4}' salmon_q_out/quant.sf | \
     grep -E 'protein_coding|lncRNA' > quant.sf.nanosim_exp.lncRNA_protein_coding
 ```
 
-Remove the header and extract non-zero expression transcript IDs for training:
-
-```bash
-awk '$3 > 0 {print}' quant.sf.nanosim_exp.lncRNA_protein_coding | \
-    cut -f1 -d'|' > quant.sf.nanosim_exp.lncRNA_protein_coding.non0.tsid
-```
-
-## 4. Read Simulation (NanoSim)
+## 4. Read Simulation (NanoSim dRNA)
 
 ```bash
 simulator.py transcriptome \
     -rg /path/to/GRCh38.p13.genome.fa \
     -rt /path/to/gencode.v38.transcripts.fa \
-    -e /path/to/quant.sf.nanosim_exp \
+    -e /path/to/quant.sf.nanosim_exp.lncRNA_protein_coding \
     -o nanosim_model_out \
-    -c nanosim_model_out/ENCFF155CFF.1m \
+    -c nanosim_model_out/ENCFF155CFF.1m \ # custom or pretrained error models
     -b guppy \
     --fastq \
     -n 4000000 \

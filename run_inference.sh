@@ -4,11 +4,19 @@ set -e # Exit immediately if a command exits with a non-zero status
 # ==============================================================================
 # 1. Configuration & Input Variables
 # ==============================================================================
-# Set these paths according to your local environment
-SPLISYNC_DIR="/path/to/SpliSync"
-MODEL_CKPT="model_weights/cdna_r9.ckpt"
-REF_FASTA="/path/to/GRCh38.p13.genome.fa"
-INPUT_BAM="test_data/reads_aligned_reads.50k.bam"
+# Input parameters
+if [ "$#" -lt 2 ]; then
+    echo "Usage: $0 <input_bam> <ref_fasta>"
+    exit 1
+fi
+
+INPUT_BAM="$1"
+REF_FASTA="$2"
+
+# Set SpliSync directory to the script location
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SPLISYNC_DIR="$SCRIPT_DIR"
+MODEL_CKPT="${SPLISYNC_DIR}/model_weights/cdna_r9.ckpt"
 
 # Prefix for intermediate and output files
 PREFIX="${INPUT_BAM%.bam}"
@@ -29,8 +37,7 @@ CORRECTED_BAM="${PREFIX}.corrected.bam"
 # ==============================================================================
 echo "[1/5] Preparing reference and BAM files..."
 samtools faidx "$REF_FASTA"
-
-# Note: Ensure the input BAM is sorted and indexed prior to merging
+samtools index "$INPUT_BAM"
 bedtools merge -i "$INPUT_BAM" > "$MERGED_BAM"
 
 echo "[2/5] Curating dataset for inference..."
