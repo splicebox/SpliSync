@@ -1722,14 +1722,14 @@ class SpliceLightning(pl.LightningModule):
             pretrained_name,
             download=False,
             config=backbone_cfg,
-            device=device,#None,  # Lightning moves it
+            device=device,
             use_head=False,
             n_classes=n_classes,
         )
         self.model.stage = stage
         if model_path:
             checkpoint = torch.load(model_path, map_location="cpu")
-            self.model.load_state_dict({k.replace("model.", ""): v for k, v in checkpoint["state_dict"].items()})
+            #self.model.load_state_dict({k.replace("model.", ""): v for k, v in checkpoint["state_dict"].items()})
             print("Loaded weights from", model_path)
 
         # freeze backbone if needed

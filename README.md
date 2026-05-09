@@ -41,6 +41,9 @@ git clone https://github.com/splicebox/SpliSync.git
 ```bash
 conda env create -f splisync_env.yml
 conda activate splisync
+
+# init git lfs (large file storage)
+git lfs install
 ```
 
 3. Build the `addXS` helper binary from [AddXS.cpp](AddXS.cpp) (required if you want XS tags in the corrected BAMs):
