@@ -30,7 +30,7 @@ INTRON_MARKS="${PREFIX}.intron_marks"
 UPDATED_INTRONS="${PREFIX}.updated_${PREDICTIONS}_threshold21"
 CORRECTED_BED="${PREFIX}.corrected.bed"
 CLEAN_BED="${PREFIX}.corrected.cleaned.bed"
-CORRECTED_BAM="${PREFIX}.corrected.bam"
+CLEAN_BAM="${PREFIX}.corrected.cleaned.bam"
 
 # ==============================================================================
 # 2. Preprocessing & Data Curation
@@ -79,16 +79,16 @@ echo "[5/5] Reconstructing corrected BAM file..."
 bedtools getfasta -fi "$REF_FASTA" -bed "$CLEAN_BED" -split -bedOut > "${CLEAN_BED}.getfasta" &
 
 # Convert corrected BED12 back to BAM
-bedToBam -i "$CLEAN_BED" -g "${REF_FASTA}.fai" -bed12 > "$CORRECTED_BAM"
-samtools index "$CORRECTED_BAM"
+bedToBam -i "$CLEAN_BED" -g "${REF_FASTA}.fai" -bed12 > "$CLEAN_BAM"
+samtools index "$CLEAN_BAM"
 
 # Add XS tags for splicing analysis
-samtools view -h "$CORRECTED_BAM" | "${SPLISYNC_DIR}/addXS" "$REF_FASTA" > "${CORRECTED_BAM}.addxs"
+samtools view -h "$CLEAN_BAM" | "${SPLISYNC_DIR}/addXS" "$REF_FASTA" > "${CLEAN_BAM}.addxs"
 
 # Wait for background processes (e.g., getfasta) to finish
 wait
 
 # Transfer original BAM tags to the newly corrected BAM
-python transfer_bam_tags.py "$INPUT_BAM" "$CORRECTED_BAM" "${CORRECTED_BED}.filtered_indices" "${CLEAN_BED}.getfasta" "${CORRECTED_BAM}.addxs"
+python transfer_bam_tags.py "$INPUT_BAM" "$CLEAN_BAM" "${CORRECTED_BED}.filtered_indices" "${CLEAN_BED}.getfasta" "${CLEAN_BAM}.addxs"
 
-echo "Workflow complete! Corrected BAM: ${CORRECTED_BAM}.withtags.bam"
+echo "Workflow complete! Corrected BAM: ${CLEAN_BAM}.withtags.bam"
