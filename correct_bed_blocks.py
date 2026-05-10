@@ -42,8 +42,7 @@ For each transcript (row *i* in the BED file):
 Output
 ------
 
-A new BED file named:
-    <bed_fn>.corrected_<basename_of_updated_intron_fn>
+A corrected BED file
 
 Usage
 -----
@@ -142,11 +141,16 @@ def fix_bed_blocks(bed: pd.DataFrame, introns: pd.DataFrame) -> pd.DataFrame:
     return bed
 
 
-#Command-line interface                           
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Correct BED block columns.")
     p.add_argument("bed", type=Path, help="Input BED12 file")
     p.add_argument("introns", type=Path, help="Updated intron coordinate file")
+    p.add_argument(
+        "-o", 
+        "--output", 
+        type=Path, 
+        help="Output file path (default: appends '.corrected.bed' to input file name)"
+    )
     return p
 
 
@@ -158,9 +162,12 @@ def main() -> None:
 
     fixed_bed = fix_bed_blocks(bed_df, intron_df)
 
-    out_path = args.bed.with_name(
-        f"{args.bed.name}.corrected"
-    )
+    # Use specified output path, or default to the original behavior
+    if args.output:
+        out_path = args.output
+    else:
+        out_path = args.bed.with_name(f"{args.bed.name}.corrected.bed")
+
     fixed_bed.to_csv(out_path, sep="\t", header=False, index=False)
     print(f"Written → {out_path}")
 

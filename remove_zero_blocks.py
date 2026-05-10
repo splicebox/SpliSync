@@ -7,7 +7,7 @@ Purpose
 -------
 Filter a BED12‐like file so that:
 
-1.  Any row that contains a negative block size (i.e. “-” in column 10)
+1.  Any row that contains a negative block size (i.e. "-" in column 10)
     is completely removed and its *row index* is written to a companion
     `<bed>.filtered_indices` file.
 
@@ -17,15 +17,12 @@ Filter a BED12‐like file so that:
       • column 10 (blockSizes)   – comma-separated list without zeros
       • column 11 (chromStarts)  – corresponding starts
 
-The cleaned BED is written to  `<bed>.rm0block`.
+The cleaned BED is written to  `<bed>.cleaned.bed`.
 
 Usage
 -----
 $ ./remove_zero_blocks.py input.bed
 
-Dependencies
-------------
-pandas  (conda install pandas -c conda-forge  OR  pip install pandas)
 """
 
 from __future__ import annotations
@@ -86,9 +83,6 @@ def process_bed(bed: pd.DataFrame) -> tuple[pd.DataFrame, List[int]]:
     return bed, removed_idx
 
 
-# --------------------------------------------------------------------------- #
-#                                 CLI wrapper                                 #
-# --------------------------------------------------------------------------- #
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Remove zero-length BED blocks.")
     p.add_argument("bed", type=Path, help="Input BED12 file")
@@ -105,7 +99,7 @@ def main() -> None:
     cleaned_df, filtered_idx = process_bed(bed_df)
 
     # Write cleaned BED
-    out_bed = args.bed.with_name(f"{args.bed.name}.rm0block")
+    out_bed = args.bed.with_name(f"{args.bed.stem}.cleaned.bed")
     cleaned_df.to_csv(out_bed, sep="\t", header=False, index=False)
     print(f"Cleaned BED written → {out_bed}")
 

@@ -51,7 +51,7 @@ addxs_line = advance_to_first_data_line(addxs_in)
 seqs_array = bed_df[12].values
 target_bam_filtered_indices = load_filtered_indices(target_bam_filtered_indices_fn)
 bam_file_out = pysam.AlignmentFile(
-    f"{target_bam}.final.bam", "wb", template=bam_file_in2
+    f"{target_bam.rsplit('.', 1)[0]}.withtags.bam", "wb", template=bam_file_in2
 )
 
 seqs_itr = iter(seqs_array)

@@ -3,18 +3,18 @@
 update_introns.py
 =================
 
-Adjust intron start / end coordinates (column 3) in a BED-like file
-using positions predicted by a second file.
+Update intron start / end coordinates (column 3)
+using positions predicted by SpliSync.
 
 Input files
 -----------
 1. intron_file
-   id  chrom  coord  is_end  strand
+   index  chrom  coord  is_intron_end  strand
    1   chr1   14829  0       -
    …
 
 2. pred_file
-   chrom  coord  score  dummy  strand
+   chrom  coord  score  is_intron_end  strand
    chr1   14830  0.96   0      -
    …
 
@@ -134,7 +134,6 @@ def update_introns(
     return pd.concat(updated_chunks, ignore_index=True)
 
 
-# CLI
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Snap intron coords to predictions.")
     p.add_argument("introns", type=Path, help="Input intron file (BED-like, 5 cols)")

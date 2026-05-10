@@ -28,8 +28,8 @@ PREDICTIONS="${DATA_DIR}_predictions.tsv"
 BED12_OUT="${PREFIX}.bed12"
 INTRON_MARKS="${PREFIX}.intron_marks"
 UPDATED_INTRONS="${PREFIX}.updated_${PREDICTIONS}_threshold21"
-CORRECTED_BED="${PREFIX}.corrected"
-CLEAN_BED="${PREFIX}.corrected.rm0block"
+CORRECTED_BED="${PREFIX}.corrected.bed"
+CLEAN_BED="${PREFIX}.corrected.cleaned.bed"
 CORRECTED_BAM="${PREFIX}.corrected.bam"
 
 # ==============================================================================
@@ -62,10 +62,10 @@ bedtools bamtobed -i "$INPUT_BAM" -bed12 > "$BED12_OUT"
 # Extract introns and apply model predictions
 python bed12_to_introns.py "$BED12_OUT" > "$INTRON_MARKS"
 
-python update_introns.py "$INTRON_MARKS" "$PREDICTIONS"
+python update_introns.py "$INTRON_MARKS" "$PREDICTIONS" -o "$UPDATED_INTRONS"
 
 # Correct the BED12 blocks based on updated splice sites
-python correct_bed_blocks.py "$BED12_OUT" "$UPDATED_INTRONS"
+python correct_bed_blocks.py "$BED12_OUT" "$UPDATED_INTRONS" -o "$CORRECTED_BED"
 
 # Clean up zero-length blocks
 python "${SPLISYNC_DIR}/remove_zero_blocks.py" "$CORRECTED_BED" 
@@ -91,4 +91,4 @@ wait
 # Transfer original BAM tags to the newly corrected BAM
 python transfer_bam_tags.py "$INPUT_BAM" "$CORRECTED_BAM" "${CORRECTED_BED}.filtered_indices" "${CLEAN_BED}.getfasta" "${CORRECTED_BAM}.addxs"
 
-echo "Workflow complete! Corrected BAM: ${CORRECTED_BAM}.final.bam"
+echo "Workflow complete! Corrected BAM: ${CORRECTED_BAM}.withtags.bam"
