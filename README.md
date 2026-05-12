@@ -4,7 +4,7 @@ SpliSync is a Genomic Language Model-driven method for splice site correction in
 
 Described in:
 
-- Lui WW and Florea L (2026). SpliSync: Genomic language model-driven splice site correction of long RNA sequencing reads. Submitted. [Suppl. data, Suppl. scripts, Full_text]
+- Lui WW and Florea L (2026). SpliSync: Genomic language model-driven splice site correction of long RNA sequencing reads. Submitted. [Suppl. data, [Suppl. scripts](supp_scripts)]
 
 ```
 Copyright (C) 2026, and GNU GPL v3.0, by Wui Wang Lui, Liliana Florea
@@ -63,8 +63,8 @@ More details are provided below.
 #### Inference pipeline 
 Edit the configuration variables at the top of [run_inference.sh](run_inference.sh) to reflect the variables (*i.e.*, path to SpliSync code, inout alignments and genome sequence) on your system, then run:
 
-```bash
-bash run_inference.sh <input_bam> <ref_fasta>
+```
+bash run_inference.sh <input_bam> <genomeref_fasta>
 ```
 
 #### Notebook demo
