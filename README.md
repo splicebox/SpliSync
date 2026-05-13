@@ -91,9 +91,9 @@ minimap2 -ax splice -uf -k14 -t 24 ref_genome.fa input_reads.fastq |samtools sor
 #### Outputs
 | File | Format | Description |
 |------|--------|-------------|
-| **Corrected Alignments** | BED12 | Corrected transcript intervals with updated splice-site block boundaries. Each row is a corrected isoform. |
-| **Corrected BAM** | BAM | Reconstructed BAM file with corrected coordinates and (optionally) XS tags for strand-specific junction analysis. Indexed `.bai` file included. |
-| **Predictions** | TSV | Model confidence scores and splice-site calls for each junction. Columns: `junction_id`, `score`, `predicted_site`. |
+| **Corrected BED** | BED12 | Corrected transcript intervals with updated splice-site block boundaries. Each row is a corrected isoform. |
+| **Corrected BAM** | BAM | Reconstructed BAM file with corrected coordinates and (optionally) XS tags for strand-specific junction analysis. |
+| **Predictions** | TSV | Model confidence scores and splice-site calls for each junction. Columns: `chrom`, `coord`, `score`, `is_intron_end`, `strand`. |
 | **Intermediate Data** | NumPy | Curated feature embeddings from the reference and reads; used for model inference. Stored in `inferencedata_*` directory. |
 
 #### Example Workflow I/O
@@ -107,11 +107,10 @@ Configuration (run_inference.sh):
 ├── INPUT_BAM = "reads_aligned.bam"
 └── REF_FASTA = "GRCh38.p13.genome.fa"
 
-Output (after pipeline completion):
-├── reads_aligned.bed12                                    # Corrected isoforms (BED12)
-├── reads_aligned.corrected.bam                            # Corrected alignments (with XS tags)
-├── reads_aligned.corrected.bam.bai                        # BAM index
-├── inferencedata_reads_aligned_predictions.tsv            # Splice-site confidence scores
+Output:
+├── reads_aligned.corrected.cleaned.bed                    # Corrected isoforms (BED12)
+├── reads_aligned.corrected.cleaned.bam                    # Corrected alignments (with XS tags)
+├── inferencedata_reads_aligned.bam.merge.predictions.tsv  # Splice-site confidence scores
 └── reads_aligned.intron_marks                             # Intermediate intron annotations
 ```
 
