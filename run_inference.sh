@@ -22,9 +22,9 @@ MODEL_CKPT="${SPLISYNC_DIR}/model_weights/cdna_r9.ckpt"
 PREFIX="${INPUT_BAM%.bam}"
 
 # Intermediate file definitions
-MERGED_BAM="${PREFIX}.merge.bam"
-DATA_DIR="inferencedata_${PREFIX}"
-PREDICTIONS="${DATA_DIR}_predictions.tsv"
+MERGED_BED="${PREFIX}.bam.merge"
+DATA_DIR="inferencedata_${PREFIX}.bam.merge"
+PREDICTIONS="${DATA_DIR}.predictions.tsv"
 BED12_OUT="${PREFIX}.bed12"
 INTRON_MARKS="${PREFIX}.intron_marks"
 UPDATED_INTRONS="${PREFIX}.updated_${PREDICTIONS}_threshold21"
@@ -38,7 +38,7 @@ CLEAN_BAM="${PREFIX}.corrected.cleaned.bam"
 echo "[1/5] Preparing reference and BAM files..."
 samtools faidx "$REF_FASTA"
 samtools index "$INPUT_BAM"
-bedtools merge -i "$INPUT_BAM" > "$MERGED_BAM"
+bedtools merge -i "$INPUT_BAM" > "$MERGED_BED"
 
 echo "[2/5] Curating dataset for inference..."
 python "${SPLISYNC_DIR}/curate_dataset.inference.py" "$INPUT_BAM" "$REF_FASTA"
@@ -47,7 +47,7 @@ python "${SPLISYNC_DIR}/curate_dataset.inference.py" "$INPUT_BAM" "$REF_FASTA"
 # 3. SpliSync Model Inference
 # ==============================================================================
 echo "[3/5] Running SpliSync inference..."
-python run_splisync.py \
+python "${SPLISYNC_DIR}/run_splisync.py" \
     --data_dir "$DATA_DIR" \
     --model_path "$MODEL_CKPT"
 
@@ -60,14 +60,18 @@ echo "[4/5] Applying predictions and correcting BED blocks..."
 bedtools bamtobed -i "$INPUT_BAM" -bed12 > "$BED12_OUT"
 
 # Extract introns and apply model predictions
-python bed12_to_introns.py "$BED12_OUT" > "$INTRON_MARKS"
+# Output format:
+# index  chrom  coord  is_intron_end  strand
+python "${SPLISYNC_DIR}/bed12_to_introns.py" "$BED12_OUT" > "$INTRON_MARKS"
 
-python update_introns.py "$INTRON_MARKS" "$PREDICTIONS" -o "$UPDATED_INTRONS"
+# Update intron start / end coordinates using positions predicted by SpliSync
+python "${SPLISYNC_DIR}/update_introns.py" "$INTRON_MARKS" "$PREDICTIONS" -o "$UPDATED_INTRONS"
 
 # Correct the BED12 blocks based on updated splice sites
-python correct_bed_blocks.py "$BED12_OUT" "$UPDATED_INTRONS" -o "$CORRECTED_BED"
+python "${SPLISYNC_DIR}/correct_bed_blocks.py" "$BED12_OUT" "$UPDATED_INTRONS" -o "$CORRECTED_BED"
 
 # Clean up zero-length blocks
+# Output: cleaned.bed, filtered_indices
 python "${SPLISYNC_DIR}/remove_zero_blocks.py" "$CORRECTED_BED" 
 
 # ==============================================================================
@@ -89,6 +93,6 @@ samtools view -h "$CLEAN_BAM" | "${SPLISYNC_DIR}/addXS" "$REF_FASTA" > "${CLEAN_
 wait
 
 # Transfer original BAM tags to the newly corrected BAM
-python transfer_bam_tags.py "$INPUT_BAM" "$CLEAN_BAM" "${CORRECTED_BED}.filtered_indices" "${CLEAN_BED}.getfasta" "${CLEAN_BAM}.addxs"
+python "${SPLISYNC_DIR}/transfer_bam_tags.py" "$INPUT_BAM" "$CLEAN_BAM" "${CORRECTED_BED}.filtered_indices" "${CLEAN_BED}.getfasta" "${CLEAN_BAM}.addxs"
 
-echo "Workflow complete! Corrected BAM: ${CLEAN_BAM}.withtags.bam"
+echo "Workflow complete! Corrected BAM: ${CLEAN_BAM%.*}.withtags.bam"
