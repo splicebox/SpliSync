@@ -33,6 +33,10 @@ SpliSync is a genomic language model-driven Python package for correcting splice
 ### 🚀 <a name="installation"></a> Quick Start / Installation
 1. Clone the repository and enter the project directory.
 ```
+# install and init git lfs (required to fetch the pretrained models)
+conda install -c conda-forge git-lfs
+git lfs install
+
 git clone https://github.com/splicebox/SpliSync.git
 ```
 
@@ -41,9 +45,6 @@ git clone https://github.com/splicebox/SpliSync.git
 ```bash
 conda env create -f splisync_env.yml
 conda activate splisync
-
-# init git lfs (large file storage)
-git lfs install
 ```
 
 3. Build the `addXS` helper binary from [AddXS.cpp](AddXS.cpp) (required if you want XS tags in the corrected BAMs):
