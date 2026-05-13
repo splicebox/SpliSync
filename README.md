@@ -38,6 +38,7 @@ conda install -c conda-forge git-lfs
 git lfs install
 
 git clone https://github.com/splicebox/SpliSync.git
+cd SpliSync
 ```
 
 2. Create the conda environment from [splisync_env.yml](splisync_env.yml):
