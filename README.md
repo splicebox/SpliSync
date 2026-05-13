@@ -4,7 +4,7 @@ SpliSync is a Genomic Language Model-driven method for splice site correction in
 
 Described in:
 
-- Lui WW and Florea L (2026). SpliSync: Genomic language model-driven splice site correction of long RNA sequencing reads. Submitted. [Suppl. data, [Suppl. scripts](supp_scripts)]
+- Lui WW and Florea L (2026). SpliSync: Genomic language model-driven splice site correction of long RNA sequencing reads. Submitted. [[Supp. data](https://zenodo.org/records/20148684), [Suppl. scripts](supp_scripts)]
 
 ```
 Copyright (C) 2026, and GNU GPL v3.0, by Wui Wang Lui, Liliana Florea
