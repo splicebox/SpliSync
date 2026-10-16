@@ -1248,9 +1248,8 @@ from sklearn.metrics import (accuracy_score, f1_score, precision_score,
                              confusion_matrix)
 
 
-
 # ----------------------------------------------------------------------
-#  The evaluate() function – exactly what you supplied
+#  The evaluate() function 
 # ----------------------------------------------------------------------
 def evaluate(model, loader, criterion, device, stage, csv_path=None, return_rows=False):
     model.eval()
@@ -1260,7 +1259,6 @@ def evaluate(model, loader, criterion, device, stage, csv_path=None, return_rows
     t_filter = 0.0
     t_write = 0.0
     t_metrics = 0.0
-    total_samples = 0
     total_bw_samples = 0
     total_bw_accuracy = 0
     total_bw_f1 = 0
@@ -1270,9 +1268,7 @@ def evaluate(model, loader, criterion, device, stage, csv_path=None, return_rows
     total_bw_auc = 0
     total_tn = total_fp = total_fn = total_tp = 0
 
-    merge_window = 20
     flanking_bp = 16
-    if_sortscore = False
 
     rows_written = 0
     csv_file = None
@@ -1284,8 +1280,6 @@ def evaluate(model, loader, criterion, device, stage, csv_path=None, return_rows
     pileup_batches = []
     inputs_batches = []
     actuals_batches = []
-    batch_pos_indices_list = []
-    batch_sizes = []
     target_ids_batches = []
     start_pos_batches = []
     sample_indices_batches = []
@@ -1340,16 +1334,12 @@ def evaluate(model, loader, criterion, device, stage, csv_path=None, return_rows
                     outputs = model(inputs, pileup_embed=pileup_embed).squeeze()
 
                 predictions = torch.sigmoid(outputs).detach().cpu().numpy()
-                binary_predictions = predictions >= 0.5
-                batch_pos_indices = np.where(binary_predictions == 1)
 
                 # Move tensors to CPU once per batch for efficient array comparisons.
                 pileup_embed_cpu = pileup_embed.cpu().numpy() if torch.is_tensor(pileup_embed) else pileup_embed
                 inputs_cpu = inputs.cpu().numpy() if torch.is_tensor(inputs) else inputs
                 targets_cpu = targets.cpu().numpy() if torch.is_tensor(targets) else targets
                 predictions_batches.append(predictions)
-                batch_pos_indices_list.append(batch_pos_indices)
-                batch_sizes.append(predictions.shape[0])
                 pileup_batches.append(pileup_embed_cpu)
                 inputs_batches.append(inputs_cpu)
                 if stage == 'test':
@@ -1378,15 +1368,9 @@ def evaluate(model, loader, criterion, device, stage, csv_path=None, return_rows
                 t_concat += time.perf_counter() - t_concat_start
 
                 t_filter_start = time.perf_counter()
-                binary_predictions_all = predictions_all >= 0.5
-                pos_batch_indices, pos_indices = np.where(binary_predictions_all == 1)
-                keep_mask = (
-                    np.ones(pos_batch_indices.shape[0], dtype=bool)
-                    if stage == 'test'
-                    else None
-                )
+                pos_batch_indices, pos_indices = np.where(predictions_all >= 0.5)
 
-                # filter predictions based on pile-up (all batches together)
+                # 1) Zero-count / empty-flank filter (alm+refskip==0 at site, or alm==0 in flank)
                 if pos_batch_indices.size > 0:
                     batch_index = pos_batch_indices
                     pos_index = pos_indices
@@ -1432,31 +1416,31 @@ def evaluate(model, loader, criterion, device, stage, csv_path=None, return_rows
                                 zero_window[i] = True
 
                     invalid_mask = zero_first2 | zero_window
-                    if stage == 'test':
-                        keep_mask[invalid_mask] = False
-                    else:
-                        predictions_all[
-                            batch_index[invalid_mask], pos_index[invalid_mask]
-                        ] = 0
+                    predictions_all[
+                        batch_index[invalid_mask], pos_index[invalid_mask]
+                    ] = 0
                 t_filter += time.perf_counter() - t_filter_start
+
+                # Recompute positive calls after zero-support filtering.
+                pos_batch_indices, pos_indices = np.where(predictions_all >= 0.5)
 
                 if stage == 'test':
                     t_write_start = time.perf_counter()
                     target_ids_all = np.concatenate(target_ids_batches, axis=0)
                     start_pos_all = np.concatenate(start_pos_batches, axis=0)
-                    valid_indices = np.where(keep_mask)[0]
-                    if valid_indices.size > 0:
-                        batch_index = pos_batch_indices[valid_indices]
-                        pos_index = pos_indices[valid_indices]
+                    if pos_batch_indices.size > 0:
+                        batch_index = pos_batch_indices
+                        pos_index = pos_indices
                         seq_len = inputs_all.shape[1]
 
                         has_left = pos_index - 1 >= 0
                         has_right = pos_index + 1 < seq_len
 
-                        left0 = np.zeros(valid_indices.shape[0], dtype=inputs_all.dtype)
-                        left1 = np.zeros(valid_indices.shape[0], dtype=inputs_all.dtype)
-                        right0 = np.zeros(valid_indices.shape[0], dtype=inputs_all.dtype)
-                        right1 = np.zeros(valid_indices.shape[0], dtype=inputs_all.dtype)
+                        n_hits = batch_index.shape[0]
+                        left0 = np.zeros(n_hits, dtype=inputs_all.dtype)
+                        left1 = np.zeros(n_hits, dtype=inputs_all.dtype)
+                        right0 = np.zeros(n_hits, dtype=inputs_all.dtype)
+                        right1 = np.zeros(n_hits, dtype=inputs_all.dtype)
 
                         if np.any(has_left):
                             left_idx = np.where(has_left)[0]
@@ -1481,8 +1465,8 @@ def evaluate(model, loader, criterion, device, stage, csv_path=None, return_rows
                         is_ag = has_left & (left0 == 7) & (left1 == 9)
                         is_gt = has_right & (right0 == 9) & (right1 == 10)
 
-                        if_end = np.full(valid_indices.shape[0], -1, dtype=int)
-                        strand = np.full(valid_indices.shape[0], -1, dtype=object)
+                        if_end = np.full(n_hits, -1, dtype=int)
+                        strand = np.full(n_hits, -1, dtype=object)
                         unset = if_end == -1
                         apply_ac = unset & is_ac
                         if_end[apply_ac] = 1
@@ -1505,8 +1489,8 @@ def evaluate(model, loader, criterion, device, stage, csv_path=None, return_rows
                         if np.issubdtype(start_pos_all.dtype, np.number):
                             position = start_pos + pos_index
                         else:
-                            position = np.empty(valid_indices.shape[0], dtype=object)
-                            for idx in range(valid_indices.shape[0]):
+                            position = np.empty(n_hits, dtype=object)
+                            for idx in range(n_hits):
                                 start_val = _to_scalar(start_pos[idx])
                                 try:
                                     position[idx] = int(start_val) + int(pos_index[idx])
@@ -1547,49 +1531,6 @@ def evaluate(model, loader, criterion, device, stage, csv_path=None, return_rows
 
                 if stage != 'test':
                     t_metrics_start = time.perf_counter()
-                    batch_start = 0
-                    if merge_window > 0:
-                        for batch_idx, batch_pos_indices in enumerate(
-                            batch_pos_indices_list
-                        ):
-                            if batch_pos_indices[0].size == 0:
-                                batch_start += batch_sizes[batch_idx]
-                                continue
-                            for batch_id in np.unique(batch_pos_indices[0]):
-                                batch_indices = np.where(
-                                    batch_pos_indices[0] == batch_id
-                                )[0]
-                                global_batch_id = batch_start + batch_id
-                                if if_sortscore:
-                                    sorted_batch = sorted(
-                                        batch_indices,
-                                        key=lambda i: predictions_all[global_batch_id][
-                                            batch_pos_indices[1][i]
-                                        ],
-                                        reverse=True,
-                                    )
-                                else:
-                                    sorted_batch = sorted(
-                                        batch_indices,
-                                        key=lambda i: pileup_embed_all[global_batch_id][
-                                            batch_pos_indices[1][i] - 1
-                                        ][1],
-                                        reverse=True,
-                                    )
-                                accepted_positions = []
-                                for i in sorted_batch:
-                                    pos_i = batch_pos_indices[1][i]
-                                    if all(
-                                        abs(pos_i - batch_pos_indices[1][j])
-                                        > merge_window
-                                        for j in accepted_positions
-                                    ):
-                                        accepted_positions.append(i)
-                                    else:
-                                        predictions_all[global_batch_id][pos_i] = 0
-                            batch_start += batch_sizes[batch_idx]
-
-                    total_samples += len(batch_pos_indices_list)
                     actuals_all = np.concatenate(actuals_batches, axis=0)
 
                     # per-sample binary metrics
@@ -1698,7 +1639,7 @@ def evaluate(model, loader, criterion, device, stage, csv_path=None, return_rows
 class SpliceLightning(pl.LightningModule):
     def __init__(
         self,
-        pretrained_ckpt_dir: str,
+        pretrained_ckpt_dir: str = "./checkpoints",
         pretrained_name: str = "hyenadna-medium-160k-seqlen",
         n_classes: int = 2,
         lr: float = 1e-3,
@@ -2009,9 +1950,6 @@ class SeqDataModule(pl.LightningDataModule):
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 
-# ----------------------------------------------------------------------
-#  Main – replaces run_train()
-# ----------------------------------------------------------------------
 def cli_main():
     import argparse
 
